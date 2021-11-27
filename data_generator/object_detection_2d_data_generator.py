@@ -46,8 +46,8 @@ try:
 except ImportError:
     warnings.warn("'pickle' module is missing. You won't be able to save parsed file lists and annotations as pickled files.")
 
-from ssd_encoder_decoder.ssd_input_encoder import SSDInputEncoder
-from data_generator.object_detection_2d_image_boxes_validation_utils import BoxFilter
+from ssd_keras.ssd_encoder_decoder.ssd_input_encoder import SSDInputEncoder
+from ssd_keras.data_generator.object_detection_2d_image_boxes_validation_utils import BoxFilter
 
 class DegenerateBatchError(Exception):
     '''
@@ -326,10 +326,12 @@ class DataGenerator:
             csvread = csv.reader(csvfile, delimiter=',')
             next(csvread) # Skip the header row.
             for row in csvread: # For every line (i.e for every bounding box) in the CSV file...
+                # print(f"Read row: {row}")
                 if self.include_classes == 'all' or int(row[self.input_format.index('class_id')].strip()) in self.include_classes: # If the class_id is among the classes that are to be included in the dataset...
                     box = [] # Store the box class and coordinates here
                     box.append(row[self.input_format.index('image_name')].strip()) # Select the image name column in the input format and append its content to `box`
                     for element in self.labels_output_format: # For each element in the output format (where the elements are the class ID and the four box coordinates)...
+                        # print(element)
                         box.append(int(row[self.input_format.index(element)].strip())) # ...select the respective column in the input format and append it to `box`.
                     data.append(box)
 
@@ -1171,7 +1173,10 @@ class DataGenerator:
             if 'original_images' in returns: ret.append(batch_original_images)
             if 'original_labels' in returns: ret.append(batch_original_labels)
 
-            yield ret
+            # print(f"Ret: {len(ret)}")
+
+            # NOTE: https://github.com/pierluigiferrari/temp/issues/380
+            yield tuple(ret)
 
     def save_dataset(self,
                      filenames_path='filenames.pkl',
